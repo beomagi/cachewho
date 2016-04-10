@@ -1,3 +1,112 @@
 Python script: Cachewho key-value store<br/>
 <a href="https://github.com/beomagi/cachewho/blob/gh-pages/cachewho.py">cachewho version sqrt(pi)</a>
 
+
+
+
+
+<!DOCTYPE html><head></head><html>
+<style>
+body { background-color:white; color:black; font-family: "Lucida Console", Monaco, monospace;font-size: 0.8em}
+.version {color:#0044dd;} .usage   {color:#009999;}
+.eg      {color:#006666;} .prompt  {color:#884422;}
+.json    {color:#990099;} .normal  {color:#003300;}
+.web     {color:#0000ff;}</style><body>
+<br/>
+
+
+A Python (2.7x) script: Cachewho key-value store<br/>
+<a href="https://github.com/beomagi/cachewho/blob/gh-pages/cachewho.py">cachewho version sqrt(pi)</a>
+
+
+
+<br/>
+<br/>
+<br/>
+
+
+<span class="normal"></span><br/>
+<span class="version">Version:&nbsp;sqrt(pi)</span><br/>
+<span class="usage">Usage:</span><br/>
+<span class="usage"></span><br/>
+<span class="usage">To&nbsp;interact&nbsp;with&nbsp;the&nbsp;cachewho&nbsp;server,&nbsp;use&nbsp;cachewho.py&nbsp;or&nbsp;curl</span><br/>
+<span class="usage">Examples&nbsp;below&nbsp;show&nbsp;both&nbsp;methods&nbsp;for&nbsp;interacting&nbsp;with&nbsp;cachewho</span><br/>
+<span class="usage"></span><br/>
+<span class="usage"></span><br/>
+<span class="eg">e.g.&nbsp;put&nbsp;one&nbsp;and&nbsp;get&nbsp;one&nbsp;(put,&nbsp;get&nbsp;and&nbsp;jget&nbsp;functions)</span><br/>
+<span class="eg">&nbsp;&nbsp;&nbsp;&nbsp;Use&nbsp;cachewho&nbsp;directly</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;put&nbsp;&#39;key-f&#39;&nbsp;89</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;get&nbsp;&#39;key-f&#39;</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;89</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;jget&nbsp;&#39;key-f&#39;</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;key-f&quot;,&quot;val&quot;:&quot;89&quot;,&quot;age&quot;:&quot;9.901&quot;}</span><br/>
+<span class="json"></span><br/>
+<span class="json"></span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&quot;put&quot;,&quot;key&quot;:&quot;yourdata&quot;,&quot;val&quot;:&quot;stuff&quot;}&#39;</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&quot;get&quot;,&quot;key&quot;:&quot;yourdata&quot;}&#39;</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;stuff</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&quot;jget&quot;,&quot;key&quot;:&quot;yourdata&quot;}&#39;</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;yourdata&quot;,&quot;val&quot;:&quot;stuff&quot;,&quot;age&quot;:&quot;12.443&quot;}</span><br/>
+<span class="json"></span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;put&quot;,&quot;key&quot;:&quot;moredata&quot;,&quot;val&quot;:&quot;morestuff&quot;}&#39;&nbsp;127.0.0.1:8084</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;get&quot;,&quot;key&quot;:&quot;moredata&quot;}&#39;&nbsp;127.0.0.1:8084</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;morestuff</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;jget&quot;,&quot;key&quot;:&quot;moredata&quot;}&#39;&nbsp;127.0.0.1:8084</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;moredata&quot;,&quot;val&quot;:&quot;morestuff&quot;,&quot;age&quot;:&quot;256.613&quot;}</span><br/>
+<span class="json"></span><br/>
+<span class="json"></span><br/>
+<span class="eg">e.g.&nbsp;Put&nbsp;many&nbsp;to&nbsp;add&nbsp;multiple&nbsp;key,value&nbsp;pairs&nbsp;at&nbsp;once&nbsp;(mput)</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;mput&quot;,&quot;items&quot;:&nbsp;[{&quot;key1&quot;:&nbsp;3},&nbsp;{&quot;key2&quot;:&nbsp;5}]}&#39;&nbsp;127.0.0.1:8084</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;mput&quot;,&quot;items&quot;:&nbsp;[{&quot;keybee&quot;:&nbsp;&quot;buzz&quot;},&nbsp;{&quot;beeboo&quot;:&nbsp;&quot;belly&quot;}]}&#39;</span><br/>
+<span class="prompt"></span><br/>
+<span class="prompt"></span><br/>
+<span class="eg">e.g.&nbsp;Get&nbsp;many&nbsp;on&nbsp;a&nbsp;defined&nbsp;list&nbsp;of&nbsp;keys&nbsp;(mget)</span><br/>
+<span class="eg">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;mget&quot;,&quot;items&quot;:&nbsp;[&quot;key1&quot;,&quot;key2&quot;,&quot;keyx&quot;]}&#39;&nbsp;127.0.0.1:8084</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;[</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;key1&quot;,&quot;val&quot;:&quot;3&quot;,&quot;age&quot;:&quot;10213.538&quot;},</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;key2&quot;,&quot;val&quot;:&quot;5&quot;,&quot;age&quot;:&quot;10213.538&quot;},</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;keyx&quot;,&quot;val&quot;:&quot;Charles&nbsp;Xavier&quot;,&quot;age&quot;:&quot;9890.759&quot;}</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;]</span><br/>
+<span class="json"></span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;mget&quot;,&quot;items&quot;:&nbsp;[&quot;key1&quot;,&quot;key2&quot;,&quot;keyx&quot;]}&#39;</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;[</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;key1&quot;,&quot;val&quot;:&quot;3&quot;,&quot;age&quot;:&quot;10259.559&quot;},</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;key2&quot;,&quot;val&quot;:&quot;5&quot;,&quot;age&quot;:&quot;10259.559&quot;},</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key&quot;:&quot;keyx&quot;,&quot;val&quot;:&quot;Charles&nbsp;Xavier&quot;,&quot;age&quot;:&quot;9936.78&quot;}</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;]</span><br/>
+<span class="json"></span><br/>
+<span class="eg">e.g.&nbsp;Get&nbsp;list&nbsp;of&nbsp;keys&nbsp;defined&nbsp;by&nbsp;substring&nbsp;(getlike)</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;getlike&quot;,&quot;key&quot;:&nbsp;&quot;bee&quot;}&#39;&nbsp;http://127.0.0.1:8084</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;[</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key:&quot;:&quot;keybee&quot;,&quot;val:&quot;:&quot;buzz&quot;,&quot;age:&quot;:&quot;4062.554&quot;},</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key:&quot;:&quot;beeboo&quot;,&quot;val:&quot;:&quot;belly&quot;,&quot;age:&quot;:&quot;4062.554&quot;}</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;]</span><br/>
+<span class="json"></span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&nbsp;&quot;getlike&quot;,&quot;key&quot;:&nbsp;&quot;bee&quot;}&#39;</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;[</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key:&quot;:&quot;keybee&quot;,&quot;val:&quot;:&quot;buzz&quot;,&quot;age:&quot;:&quot;4304.626&quot;},</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;{&quot;key:&quot;:&quot;beeboo&quot;,&quot;val:&quot;:&quot;belly&quot;,&quot;age:&quot;:&quot;4304.626&quot;}</span><br/>
+<span class="json">&nbsp;&nbsp;&nbsp;&nbsp;]</span><br/>
+<span class="json"></span><br/>
+<span class="json"></span><br/>
+<span class="eg">e.g.&nbsp;health&nbsp;check&nbsp;-&nbsp;is&nbsp;the&nbsp;server&nbsp;running?&nbsp;Note,&nbsp;there&#39;s&nbsp;a&nbsp;GET&nbsp;method&nbsp;for&nbsp;easy&nbsp;browser&nbsp;access</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;./cachewho.py&nbsp;json&nbsp;&#39;{&quot;cmd&quot;:&quot;health&quot;}&#39;</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;OK</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;127.0.0.1:8084/health</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;OK</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&gt;&gt;&nbsp;curl&nbsp;-X&nbsp;POST&nbsp;-d&nbsp;&#39;{&quot;cmd&quot;:&quot;health&quot;}&#39;&nbsp;http://127.0.0.1:8084</span><br/>
+<span class="prompt">&nbsp;&nbsp;&nbsp;&nbsp;OK</span><br/>
+<span class="prompt"></span><br/>
+<span class="eg">e.g.&nbsp;browser&nbsp;shortcuts:</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/help/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;help&nbsp;page</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;lists&nbsp;all&nbsp;items</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/health/&nbsp;&nbsp;&nbsp;-&nbsp;cachewho&nbsp;health</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/key/thing&nbsp;-&nbsp;gets&nbsp;the&nbsp;lone&nbsp;value&nbsp;of&nbsp;key&nbsp;&quot;thing&quot;</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/save/file&nbsp;-&nbsp;saves&nbsp;the&nbsp;current&nbsp;dictionary&nbsp;to&nbsp;&quot;file&quot;</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/load/file&nbsp;-&nbsp;loads&nbsp;the&nbsp;current&nbsp;dictionary&nbsp;from&nbsp;&quot;file&quot;</span><br/>
+<span class="web">&nbsp;&nbsp;&nbsp;&nbsp;http://127.0.0.1:8084/status/&nbsp;&nbsp;&nbsp;-&nbsp;shows&nbsp;server&nbsp;statistics</span><br/>
+<span class="web"></span><br/>
+<span class="web"></span><br/>
+<span class="web"></span><br/></body></html>
+
+
