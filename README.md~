@@ -7,7 +7,7 @@ Run cachewho.py without arguments to start the server
 Default is serving at http://127.0.0.1:8084
 
 Run ./cachewho.py help or point your browser to http://127.0.0.1:8084/help/ for the usage info:
-````
+
 Version: sqrt(pi)
 Usage:
 
@@ -88,4 +88,4 @@ e.g. browser shortcuts:
     http://127.0.0.1:8084/load/file - loads the current dictionary from "file"
     http://127.0.0.1:8084/status/   - shows server statistics
 
-````
+
