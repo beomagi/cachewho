@@ -4,7 +4,7 @@ A JSON/cmdline interactive key value store using multithreading to enhance perfo
 
 Run cachewho.py without arguments to start the server
 
-Default is serving at http://127.0.0.1:8084
+Default is serving at 127.0.0.1:8084
 
 Run ./cachewho.py help or point your browser to http://127.0.0.1:8084/help/ for the usage info:
 ````
