@@ -394,13 +394,15 @@ class Handler(BaseHTTPRequestHandler):
             message=""
             with saftey: #store in temp variable so hold lock a minimum
                 keyvaluestoretmp=keyvaluestore
+                print(keyvaluestoretmp)
             with saferead: itemread+=len(keyvaluestoretmp)
             for items in keyvaluestoretmp:
                 keyp="\"key\":\""+str(items)+"\""
                 valp="\"val\":\""+str(keyvaluestoretmp[items][0])+"\""
-                agep=str(round(tnow-keyvaluestoretmp[items][1],5))
+                agep=str(round(tnow-keyvaluestoretmp[items][1],2))
                 timp="\"age\":\""+agep+"\""
                 itemlist.append("{"+keyp+","+valp+","+timp+"}")
+                itemlist.sort()
             message=",\n".join(itemlist)
             message="[\n"+message+"\n]" #json list output
         self.send_response(200)
@@ -507,31 +509,45 @@ def runserver():
 def main():
     global locserver
     global pidfile
+    global serverpt
 
     args=sys.argv
     prms=len(args)
+
     if prms==1:
         try:
+            servercheck=jsonrequest("/",'{"cmd":"health"}',locserver).strip()
+            if servercheck=="OK":
+                print("The Server is already running")
+        except Exception, e:
             print(pidfile)
             with open(pidfile,'w') as pidinfo:
                 pidinfo.write(str(os.getpid()))
             runserver()
-        except Exception, e:
-            servercheck=jsonrequest("/",'{"cmd":"health"}',locserver).strip()
-            if servercheck=="OK":
-                print("The Server is already running")
-            else:
-                print('Error starting server : '+str(e))
         exit
+
 
     if prms>=2:
         for idx in range(len(args)):
             if args[idx]=="-s":
                 if idx < (len(args)-1):
                     locserver=args[idx+1]
-                    print(locserver)
                     args.pop(idx+1)
                     args.pop(idx)
+                    prms-=2
+                    if prms==1:
+                        try:
+                            servercheck=jsonrequest("/",'{"cmd":"health"}',locserver).strip()
+                            if servercheck=="OK":
+                                print("The Server is already running")
+                        except Exception, e:
+                            print(pidfile)
+                            with open(pidfile,'w') as pidinfo:
+                                pidinfo.write(str(os.getpid()))
+                            if ':' in locserver:
+                                serverpt=int(locserver.split(":")[1])
+                            runserver()
+                        exit
                     break
         if args[1].lower()=="put":
             if prms>=4:
@@ -560,3 +576,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
