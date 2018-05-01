@@ -2,14 +2,13 @@
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ThreadingMixIn
-import threading
-import thread
-import urlparse
 import httplib
-import time
 import json
-import sys, os
 import pickle
+import sys, os
+import time
+import thread, threading
+import urlparse
 
 
 serverip='127.0.0.1'
@@ -432,6 +431,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write("JSON_parse_error")
             self.wfile.write('\n')
             return
+
         print(gnow+" "+str(json.dumps(jrequest))) #.dumps to suppress unicode u
         retval=""
         if ('cmd' in jrequest):
@@ -506,15 +506,27 @@ def runserver():
     server.serve_forever()
 
 
+
+
+def  argchk(args, param, option=None):
+    if param in args:
+        if option == None:
+            return True
+        else:
+            optidx=args.index(param)+1
+            if optidx < len(args):
+                return args[optidx]
+    return None
+
+
+
 def main():
     global locserver
     global pidfile
     global serverpt
-
     args=sys.argv
-    prms=len(args)
 
-    if prms==1:
+    if argchk(args,"-s",1):
         try:
             servercheck=jsonrequest("/",'{"cmd":"health"}',locserver).strip()
             if servercheck=="OK":
@@ -524,9 +536,9 @@ def main():
             with open(pidfile,'w') as pidinfo:
                 pidinfo.write(str(os.getpid()))
             runserver()
-        exit
+        ex
 
-
+"""
     if prms>=2:
         for idx in range(len(args)):
             if args[idx]=="-s":
@@ -571,7 +583,7 @@ def main():
             print(qury)
         else:
             print(examples)
-
+"""
 
 
 if __name__ == '__main__':
