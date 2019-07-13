@@ -1,11 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 import threading
-import thread
-import urlparse
-import httplib
+from urllib.parse import urlparse
 import time
 import json
 import sys, os
@@ -15,39 +13,59 @@ import pickle
 serverip='127.0.0.1'
 serverpt=8084
 locserver=serverip+":"+str(serverpt)
-polltime=30
+polltime=5
 mypath=os.path.dirname(os.path.realpath(sys.argv[0]))
 datastoreloc=mypath+os.sep
 pidfile=mypath+os.sep+"cachewhopid"
 
-
 keyvaluestore={} #usually atomic in operation
-saftey=threading.RLock()
-reqcount=0 #total requests since server start
-itemwrit=0 #total single item writes
-itemread=0 #total single item reads
-reqcount_last=0 #for diff calculation
-itemwrit_last=0 #for diff calculation
-itemread_last=0 #for diff calculation
-reqcountps=0 #requests per seconds
-itemwritps=0 #write items per second
-itemreadps=0 #read items per second
-safereqs=threading.RLock()
-safewrit=threading.RLock()
-saferead=threading.RLock()
-safeps=threading.RLock()
+safelk=threading.RLock() #anal retentive just in case ....
+safestats=threading.RLock() #lock for stats (shouldn't be needed, but just in case)
+stats={}
+stats['reqcount']=0 #total requests since server start
+stats['itemwrit']=0 #total single item writes
+stats['itemread']=0 #total single item reads
+stats['reqcount_last']=0 #for diff calculation
+stats['itemwrit_last']=0 #for diff calculation
+stats['itemread_last']=0 #for diff calculation
+stats['reqcountps']=0 #requests per seconds
+stats['itemwritps']=0 #write items per second
+stats['itemreadps']=0 #read items per second
 server_start_timeunx=time.time()
 server_start_time=time.gmtime(server_start_timeunx)
-fmt_server_start_time=time.strftime('%Y.%m.%d-%H:%M:%S',server_start_time)
+fmt_server_start_time=time.strftime('%Y-%m-%d %H:%M:%S',server_start_time)
 
 
 def jsonrequest(apiinterface,payload,server):#generic equivalent to curl -X POST
-    conn = httplib.HTTPConnection(server, timeout=10)
+    conn = http.client.HTTPConnection(server, timeout=10)
     headers={"Content-Type":"application/json","Accept": "text/plain"}
     conn.request("POST", apiinterface, payload, headers)
     response = conn.getresponse()
     data = response.read()
     return(data.strip())
+
+def statsdata():
+    global tnow
+    global gnow
+    global keyvaluestore
+    global safestats, safelk
+    global stats 
+    global server_start_time, server_start_timeunx, fmt_server_start_time
+    lines=[]
+    tnow=time.time()
+    gnow=time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tnow))
+    lines.append('"ServerStartTime"     : "{}"'.format(fmt_server_start_time))
+    lines.append('"ServerTimeNow"       : "{}"'.format(gnow))
+    with safestats: tmpstat=stats
+    lines.append('"RequestsSinceStart"  : "{}"'.format(tmpstat['reqcount']))
+    lines.append('"ItemWritesSinceStart": "{}"'.format(tmpstat['itemwrit']))
+    lines.append('"ItemReadsSinceStart" : "{}"'.format(tmpstat['itemread']))
+    lines.append('"RequestsPerSecond"   : "{}"'.format(tmpstat['reqcountps']))
+    lines.append('"ItemWritesPerSecond" : "{}"'.format(tmpstat['itemwritps']))
+    lines.append('"ItemReadsPerSecond"  : "{}"'.format(tmpstat['itemreadps']))
+    statsmessage=",\n".join(lines)
+    statsmessage="\n".join(['{',statsmessage,'}'])
+    return statsmessage
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -56,43 +74,43 @@ class Handler(BaseHTTPRequestHandler):
         global tnow
         global gnow
         global keyvaluestore
-        global safereqs, saferead, safeps
-        global reqcount, itemread, itemwrit
+        global safestats, safelk
+        global stats 
         global server_start_time, server_start_timeunx, fmt_server_start_time
 
-        with safereqs: reqcount+=1
+        with safestats: stats['reqcount']+=1
         tnow=time.time()
         gnow=time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tnow))
         message=""
-        parsed_data = urlparse.urlparse(self.path)
-
+        parsed_data = urlparse(self.path)
+        path=parsed_data.path
+        if path=="/stats": message=statsdata()
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(message)
-        self.wfile.write('\n')
+        self.wfile.write(message.encode())
+        self.wfile.write('\n'.encode())
         return
 
     def do_POST(self):
         global keyvaluestore
-        global safereqs
-        global reqcount
-
-        with safereqs: reqcount+=1
-
+        global safelk, safestats
+        global stats 
+        with safestats: stats['reqcount']+=1
         tnow=time.time()
         gnow=time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tnow))
-        parsed_path = urlparse.urlparse(self.path)
+        parsed_path = urlparse(self.path)
         location=parsed_path.path
-        length=self.headers.getheader('Content-Length')
+
+        length=int(self.headers.get('Content-Length'))
         if length > 0:
             rawrequest=self.rfile.read(int(length))
+            rawrequest=str(rawrequest,'utf-8','ignore') #convert the request to string
         try:
             jrequest=json.loads(rawrequest)
         except:
             self.send_response(200)
             self.end_headers()
-            self.wfile.write("JSON_parse_error")
-            self.wfile.write('\n')
+            self.wfile.write("JSON_parse_error\n".encode())
             return
         print(gnow+" "+str(json.dumps(jrequest))) #.dumps to suppress unicode u
 
@@ -102,11 +120,32 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
 
+def timemgmt():
+    global safelk, safestats
+    global stats 
+    global polltime
+    earlier=time.time()
+    while True:
+        time.sleep(polltime)
+        now=time.time()
+        elapsed_time=now-earlier
+        if elapsed_time==0: elapsed_time=0.001
+        with safestats:
+            stats['reqcountps']=float(stats['reqcount']-stats['reqcount_last'])/elapsed_time
+            stats['itemreadps']=float(stats['itemread']-stats['itemread_last'])/elapsed_time
+            stats['itemwritps']=float(stats['itemwrit']-stats['itemwrit_last'])/elapsed_time
+            stats['reqcount_last']=stats['reqcount']
+            stats['itemread_last']=stats['itemread']
+            stats['itemwrit_last']=stats['itemwrit']
+        earlier=time.time()
+
+
+
 def runserver():
     global threadlist
     global maxthreads
     print("starting timing thread")
-    thread.start_new_thread(timemgmt,("",))
+    threading.Thread(target=timemgmt,args=()).start()
     print("setting up http server")
     server = ThreadedHTTPServer(('0.0.0.0',serverpt), Handler)
     print("starting server")
@@ -120,3 +159,9 @@ def main():
 
     args=sys.argv
     prms=len(args)
+    if "--server" in args:
+        runserver()
+        exit()
+
+if __name__ == "__main__":
+    main()
