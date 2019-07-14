@@ -68,7 +68,21 @@ def statsdata():
     return statsmessage
 
 
+def getputs(kvdata): #normalize a dict or listof dicts
+    puts=[]
+    if type(kvdata)==type({}):
+        for keys in kvdata.keys():
+            puts.append({keys:kvdata.get(keys)})
+    if type(kvdata)==type([]):
+        for kvs in kvdata:
+            if type(kvs)==type({}):
+                puts+=getputs(kvs)
+    return puts
+
+
+
 class Handler(BaseHTTPRequestHandler):
+
 
     def do_GET(self):
         global tnow
@@ -85,6 +99,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed_data = urlparse(self.path)
         path=parsed_data.path
         if path=="/stats": message=statsdata()
+        if path=="/dump": message=json.dumps(keyvaluestore,indent=2,sort_keys=True)
         self.send_response(200)
         self.end_headers()
         self.wfile.write(message.encode())
@@ -112,11 +127,18 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("JSON_parse_error\n".encode())
             return
+        if jrequest.get("put"):
+            keyval=jrequest.get("put");
+            puts=getputs(keyval)
+            with safelk:
+                for items in puts:
+                    for keys in items:
+                        keyvaluestore[keys]=items[keys]
         print(gnow+" "+str(json.dumps(jrequest))) #.dumps to suppress unicode u
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    HTTPServer.request_queue_size=1000
+    HTTPServer.request_queue_size=10000
     pass
 
 
