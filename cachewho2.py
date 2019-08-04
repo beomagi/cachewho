@@ -98,7 +98,7 @@ class Handler(BaseHTTPRequestHandler):
         message=""
         parsed_data = urlparse(self.path)
         path=parsed_data.path
-        if path=="/stats": message=statsdata()
+        if path=="/stats" or path=="/": message=statsdata()
         if path=="/dump": message=json.dumps(keyvaluestore,indent=2,sort_keys=True)
         self.send_response(200)
         self.end_headers()
@@ -110,6 +110,7 @@ class Handler(BaseHTTPRequestHandler):
         global keyvaluestore
         global safelk, safestats
         global stats 
+        message=""
         with safestats: stats['reqcount']+=1
         tnow=time.time()
         gnow=time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tnow))
@@ -128,12 +129,33 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write("JSON_parse_error\n".encode())
             return
         if jrequest.get("put"):
-            keyval=jrequest.get("put");
+            keyval=jrequest.get("put")
             puts=getputs(keyval)
             with safelk:
                 for items in puts:
                     for keys in items:
                         keyvaluestore[keys]=items[keys]
+
+        if jrequest.get("get"):
+            keyval=jrequest.get("get")
+            with safelk:
+                if type(keyval)==type([]):
+                    pass
+                    for eachval in keyval:
+                        msg=[]
+                        data=keyvaluestore.get(eachval) 
+                        msg.append("{} : {}".format(eachval,data))
+                    message="\n".join(msg)
+                else:
+                    message=keyvaluestore.get(keyval) 
+
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(message.encode())
+        self.wfile.write('\n'.encode())
+        return
+
+
         print(gnow+" "+str(json.dumps(jrequest))) #.dumps to suppress unicode u
 
 
@@ -184,6 +206,11 @@ def main():
     if "--server" in args:
         runserver()
         exit()
+    else:
+        helpmsg=[]
+        helpmsg.append("  --server  : run server")
+        print("\n".join(helpmsg))
+
 
 if __name__ == "__main__":
     main()
