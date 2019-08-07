@@ -10,10 +10,39 @@ import sys, os
 import pickle
 
 
+myname=sys.argv[0]
+Helps="""
+  About:
+    {myname} is a small quick keyvalue store.
+    once running as a server, interface with it as any rest API. This makes it convenient for most languages.
+  
+  Usage:
+    {myname} -server
+      Starts the server
+    {myname} -server <PORT>
+      Starts the server on a specific port (default 8084). e.g. {myname} -server 1234
+  
+
+  Curl examples:
+
+    PUT - one or more entries to the dictionary:
+       curl 127.0.0.1:8084 -X POST -d '{"put":{"dog":"cat","Terry":"Crews"}}'
+       [{"dog": "cat"}, {"Terry": "Crews"}]
+
+    GET - one or more entries from the dictionary:
+       curl 127.0.0.1:8383 -X POST -d '{"get":["Terry","dog","Frappachino"]}'
+       {"hood": "rat"}
+       {"dog": "cat"}
+       {"dsdfsd": null}
+
+       entries that do not exist in the dictionary will return null
+"""
+Helps=Helps.replace('{myname}',myname)
+
 serverip='127.0.0.1'
-serverpt=8084
+serverpt=8084 #default port
 locserver=serverip+":"+str(serverpt)
-polltime=5
+polltime=5 #seconds between stat polls
 mypath=os.path.dirname(os.path.realpath(sys.argv[0]))
 datastoreloc=mypath+os.sep
 pidfile=mypath+os.sep+"cachewhopid"
@@ -84,6 +113,31 @@ def getputs(kvdata): #normalize a dict or listof dicts
 class Handler(BaseHTTPRequestHandler):
 
 
+    def __simpget(self,jrequest):
+        keyval=jrequest.get("get")
+        with safelk:
+            if type(keyval)==type([]):
+                msg=[]
+                for eachval in keyval:
+                    data=keyvaluestore.get(eachval)
+                    msg.append(json.dumps({eachval:data}))
+                getmessage="\n".join(msg)
+            else:
+                getmessage=keyvaluestore.get(keyval)
+            print(getmessage)
+            return getmessage
+
+    def __simpput(self,jrequest):
+        keyval=jrequest.get("put")
+        puts=getputs(keyval)
+        msgoutput=[]
+        with safelk:
+            for items in puts:
+                for keys in items:
+                    keyvaluestore[keys]=items[keys]
+                    msgoutput.append(items)
+        return(json.dumps(msgoutput))
+
     def do_GET(self):
         global tnow
         global gnow
@@ -128,26 +182,12 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("JSON_parse_error\n".encode())
             return
+
         if jrequest.get("put"):
-            keyval=jrequest.get("put")
-            puts=getputs(keyval)
-            with safelk:
-                for items in puts:
-                    for keys in items:
-                        keyvaluestore[keys]=items[keys]
+            message+=str(self.__simpput(jrequest))
 
         if jrequest.get("get"):
-            keyval=jrequest.get("get")
-            with safelk:
-                if type(keyval)==type([]):
-                    pass
-                    for eachval in keyval:
-                        msg=[]
-                        data=keyvaluestore.get(eachval) 
-                        msg.append("{} : {}".format(eachval,data))
-                    message="\n".join(msg)
-                else:
-                    message=keyvaluestore.get(keyval) 
+            message+=str(self.__simpget(jrequest))
 
         self.send_response(200)
         self.end_headers()
@@ -161,7 +201,6 @@ class Handler(BaseHTTPRequestHandler):
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     HTTPServer.request_queue_size=10000
-    pass
 
 
 def timemgmt():
@@ -185,14 +224,14 @@ def timemgmt():
 
 
 
-def runserver():
+def runserver(port):
     global threadlist
     global maxthreads
     print("starting timing thread")
     threading.Thread(target=timemgmt,args=()).start()
     print("setting up http server")
-    server = ThreadedHTTPServer(('0.0.0.0',serverpt), Handler)
-    print("starting server")
+    server = ThreadedHTTPServer(('0.0.0.0',port), Handler)
+    print("starting server on port {}".format(port))
     server.serve_forever()
 
 
@@ -204,12 +243,14 @@ def main():
     args=sys.argv
     prms=len(args)
     if "--server" in args:
-        runserver()
+        port=serverpt
+        comindex=args.index('--server')
+        if len(args) > comindex+1:
+            port=int(args[comindex+1])
+        runserver(port)
         exit()
     else:
-        helpmsg=[]
-        helpmsg.append("  --server  : run server")
-        print("\n".join(helpmsg))
+        print(Helps)
 
 
 if __name__ == "__main__":
